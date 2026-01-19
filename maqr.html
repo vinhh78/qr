@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chuyển khoản - Pham Cong Vinh</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #ce1616;
+            --accent-color: #ffd700;
+            --bg-dark: #0f0f0f;
+            --text-white: #ffffff;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: var(--bg-dark);
+            background-image: radial-gradient(circle at 50% 50%, #4a0000 0%, #000000 100%);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            perspective: 1000px;
+        }
+
+        
+        .background-effect {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: -1;
+        }
+        
+        .floating-icon {
+            position: absolute;
+            bottom: -50px;
+            font-size: 24px;
+            opacity: 0.5;
+            animation: floatUp linear infinite;
+        }
+
+        @keyframes floatUp {
+            0% { transform: translateY(0) rotate(0deg); opacity: 0.5; }
+            100% { transform: translateY(-120vh) rotate(360deg); opacity: 0; }
+        }
+
+        
+        .card-container {
+            position: relative;
+            width: 320px;
+            height: 540px; 
+            transform-style: preserve-3d;
+            transition: transform 0.1s;
+        }
+
+        .card {
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            color: var(--text-white);
+            position: relative;
+            overflow: hidden;
+            transform-style: preserve-3d;
+        }
+
+        /* Logo */
+        .bank-logo {
+            font-weight: 800;
+            font-size: 24px;
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px var(--primary-color);
+            transform: translateZ(20px); /* Hiệu ứng nổi logo */
+        }
+        .bank-logo span {
+            color: var(--primary-color);
+            background: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            margin-right: 5px;
+        }
+
+        /* QR Frame */
+        .qr-frame {
+            background: white;
+            padding: 10px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+            width: 200px;
+            height: 200px;
+            transform: translateZ(30px); /* QR nổi hơn nền */
+        }
+        .qr-frame img { width: 100%; height: 100%; object-fit: contain; }
+
+        .info-group { transform: translateZ(20px); }
+
+        .name {
+            font-size: 18px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--accent-color);
+            margin-top: 10px;
+        }
+
+        .stk-number {
+            font-size: 22px;
+            font-weight: 600;
+            margin: 5px 0 15px 0;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .stk-number:hover { text-shadow: 0 0 15px var(--accent-color); color: var(--accent-color); }
+
+        
+        .btn-copy {
+            padding: 12px 30px;
+            border: none;
+            background: linear-gradient(45deg, var(--primary-color), #ff4b4b);
+            color: white;
+            font-weight: 600;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(206, 22, 22, 0.4);
+            transition: 0.3s;
+            transform: translateZ(25px);
+            font-size: 16px;
+            outline: none;
+        }
+        .btn-copy:hover {
+            transform: translateZ(30px) scale(1.05);
+            box-shadow: 0 0 25px rgba(206, 22, 22, 0.8);
+        }
+        .btn-copy:active { transform: scale(0.95); }
+
+        
+        .message-box {
+            margin-top: 20px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            transform: translateZ(20px);
+        }
+        
+        .ty-text {
+            font-size: 14px;
+            font-style: italic;
+            color: rgba(255,255,255,0.8);
+            animation: fadeInOut 4s infinite;
+        }
+
+        @keyframes fadeInOut {
+            0%, 100% { opacity: 0; transform: translateY(10px); }
+            10%, 90% { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Toast thông báo */
+        .toast {
+            position: absolute;
+            bottom: 20px;
+            background: rgba(40, 167, 69, 0.9);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-weight: 600;
+            transform: translateY(100px);
+            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            opacity: 0;
+            z-index: 100;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+        }
+        .toast.show { transform: translateY(0); opacity: 1; }
+
+    </style>
+</head>
+<body>
+
+    <div class="background-effect" id="bgEffect"></div>
+
+    <div class="card-container" id="cardContainer">
+        <div class="card">
+            <div class="bank-logo"><span>MB</span>BANK</div>
+            
+            <div class="qr-frame">
+                <img src="https://api.vietqr.io/image/970422-0599999998386-g81x7vW.jpg?accountName=PHAM%20CONG%20VINH&amount=0" alt="QR Code">
+            </div>
+
+            <div class="info-group">
+                <div class="name">PHAM CONG VINH</div>
+                <div class="stk-number" id="stkText" onclick="copyAction()">0599999998386</div>
+            </div>
+
+            <button class="btn-copy" onclick="copyAction()">Sao chép STK</button>
+            
+            <div class="message-box">
+                <div class="ty-text" id="tyText">Cảm ơn sếp nhiều nha! ❤️</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast">✅ Đã sao chép! Ting ting nhé!</div>
+
+    <script>
+        
+        const messages = [
+            "Cảm ơn sếp nhiều nha! ❤️",
+            "Chúc bạn một ngày tràn đầy năng lượng! ⚡",
+            "Mãi bên nhau bạn nhé! 🤝",
+            "Ting ting là vui liền à! 💸",
+            "Giao dịch thành công, vạn sự như ý! 🌟",
+            "Đã nhận tấm lòng, xin cảm ơn! 🙏"
+        ];
+
+        
+        let msgIndex = 0;
+        const msgElement = document.getElementById('tyText');
+
+        setInterval(() => {
+            msgIndex = (msgIndex + 1) % messages.length;
+            
+            msgElement.style.animation = 'none';
+            msgElement.offsetHeight; 
+            msgElement.style.animation = 'fadeInOut 4s infinite';
+            msgElement.innerText = messages[msgIndex];
+        }, 4000);
+
+        
+        const container = document.getElementById('cardContainer');
+        const card = document.querySelector('.card');
+
+        document.addEventListener('mousemove', (e) => {
+            let xAxis = (window.innerWidth / 2 - e.pageX) / 25;
+            let yAxis = (window.innerHeight / 2 - e.pageY) / 25;
+            container.style.transform = `rotateY(${xAxis}deg) rotateX(${yAxis}deg)`;
+        });
+
+        document.addEventListener('mouseleave', () => {
+            container.style.transform = `rotateY(0deg) rotateX(0deg)`;
+        });
+
+        
+        function copyAction() {
+            const stk = document.getElementById('stkText').innerText;
+            
+            navigator.clipboard.writeText(stk).then(() => {
+                
+                const toast = document.getElementById('toast');
+                toast.classList.add('show');
+                setTimeout(() => toast.classList.remove('show'), 3000);
+
+                
+                triggerConfetti();
+            });
+        }
+
+        function triggerConfetti() {
+            var duration = 3 * 1000;
+            var animationEnd = Date.now() + duration;
+            var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+
+            var random = function(min, max) { return Math.random() * (max - min) + min; }
+
+            var interval = setInterval(function() {
+                var timeLeft = animationEnd - Date.now();
+                if (timeLeft <= 0) return clearInterval(interval);
+                var particleCount = 50 * (timeLeft / duration);
+                
+                // Bắn từ 2 bên trái phải
+                confetti(Object.assign({}, defaults, { particleCount, origin: { x: random(0.1, 0.3), y: Math.random() - 0.2 } }));
+                confetti(Object.assign({}, defaults, { particleCount, origin: { x: random(0.7, 0.9), y: Math.random() - 0.2 } }));
+            }, 250);
+        }
+
+        
+        const bgContainer = document.getElementById('bgEffect');
+        const icons = ['💰', '❤️', '⭐', '💎', '💸'];
+
+        function createFloatingIcon() {
+            const el = document.createElement('div');
+            el.classList.add('floating-icon');
+            el.innerText = icons[Math.floor(Math.random() * icons.length)];
+            
+            
+            el.style.left = Math.random() * 100 + 'vw';
+            el.style.animationDuration = (Math.random() * 5 + 5) + 's'; 
+            el.style.fontSize = (Math.random() * 20 + 10) + 'px';
+            
+            bgContainer.appendChild(el);
+
+            
+            setTimeout(() => { el.remove(); }, 10000);
+        }
+
+        setInterval(createFloatingIcon, 500); 
+
+    </script>
+</body>
+</html>
